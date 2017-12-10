@@ -1,10 +1,12 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
+import StripeWrapper from "./StripeWrapper";
 
 class Header extends Component {
   renderContent() {
-    switch (this.props.auth) {
+    const user = this.props.auth;
+    switch (user) {
       case null:
         return;
       case false:
@@ -14,11 +16,17 @@ class Header extends Component {
           </li>
         );
       default:
-        return (
-          <li>
+        return [
+          <li key="1">
+            <StripeWrapper />
+          </li>,
+          <li key="3" style={{ margin: "0 10px" }}>
+            Credits: {user.credits}
+          </li>,
+          <li key="2">
             <a href="/auth/logout">Logout</a>
           </li>
-        );
+        ];
     }
   }
 
