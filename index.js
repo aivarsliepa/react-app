@@ -6,6 +6,9 @@ const cookieSession = require("cookie-session");
 const passport = require("passport");
 const bodyParser = require("body-parser");
 mongoose.connect(keys.mongoURI);
+if (process.env.NODE_ENV !== "production") {
+  mongoose.set("debug", true);
+}
 require("./models/User");
 require("./models/Survey");
 require("./services/passport");
