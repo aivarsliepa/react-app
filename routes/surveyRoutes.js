@@ -45,16 +45,37 @@ module.exports = app => {
 
   app.post("/api/surveys/webhooks", (req, res) => {
     const path = new Path("/api/surveys/:surveyId/:choice");
-    const uniqueClickEventData = _.chain(req.body)
+    _.chain(req.body)
       .filter(({ event }) => event === "click")
       .map(({ url, email }) => {
         const match = path.test(new URL(url).pathname);
         if (match) return { email, ...match };
       })
       .compact()
-      .uniqBy(e => e.email + e.surveyId)
+      .uniqBy(({ email, surveyId }) => email + surveyId)
+      .each(({ email, surveyId, choice }) => {
+        Survey.findOneAndUpdate(
+          {
+            _id: surveyId,
+            recipients: {
+              $elemMatch: {
+                email,
+                responded: false
+              }
+            }
+          },
+          {
+            $inc: { [choice]: 1 },
+            $set: { "recipients.$.responded": true },
+            lastResponded: new Date()
+          }
+        ).exec();
+      })
       .value();
-    console.log(uniqueClickEventData);
     res.send({});
+  });
+
+  app.get("/api/surveys/:surveyId/:choice", (req, res) => {
+    res.send("Thanks for responding!");
   });
 };
